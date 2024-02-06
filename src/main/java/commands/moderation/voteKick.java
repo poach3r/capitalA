@@ -76,22 +76,23 @@ public class voteKick {
                   .respond();
               break;
             }
-          }).removeAfter(1, TimeUnit.MINUTES); // TODO make this dynamic with main.settings.kickTimeLimit
+          }).removeAfter(main.settings.getKickTimeLimit(), TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
-            if(upvotes > downvotes && upvotes + downvotes >= main.settings.kickThreshold) { // if vote has gone through
+            if(upvotes > downvotes && upvotes + downvotes >= main.settings.getKickThreshold()) { // if vote has gone through
               System.out.println("kick called by " + kickerId + " has resulted in the kick of " + kickedId + " with a result of " + upvotes + "/" + downvotes);
-              message.reply(event.getServer().get().getMemberById(kickedId).get().getMentionTag() + " has been kicked with a vote of " + upvotes + "/" + downvotes + ".");
-// if the message gets 50%> upvotes out of main.settings.kickThreshold>= total votes then the user specified in args[1] is kicked
+              message.reply(event.getServer().get().getMemberById(kickedId).get().getMentionTag() + " has been kicked with a vote of " + upvotes + "/" + downvotes + "."); // if the message gets 50%> upvotes out of main.settings.kickThreshold>= total votes then the user specified in args[1] is kicked
               message.getServer().get().kickUser(message.getServer().get().getMemberById(kickedId).get()); //kick user
             }
             else { // if vote has failed
               System.out.println("kick called by " + kickerId + " has failed to kick " + kickedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply("Kick has failed with a vote of " + upvotes + "/" + downvotes);
             }
-          }, 1, TimeUnit.MINUTES); // TODO make this dynamic with main.settings.kickTimeLimit
+          }, main.settings.getKickTimeLimit(), TimeUnit.MINUTES);
         });
-    } catch(Exception e) { System.out.println(e); }
+    } catch(Exception e) { 
+      System.out.println("Error while kicking: " + e); 
+    }
   }
 
   // true = user cannot be kicked

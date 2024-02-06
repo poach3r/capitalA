@@ -76,20 +76,20 @@ public class addFilter {
                   .respond();
               break;
             }
-          }).removeAfter(10, TimeUnit.SECONDS);
+          }).removeAfter(1, TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
             if(upvotes > downvotes && upvotes + downvotes >= 0) { // if vote has gone through
               message.reply(args[1] + " has successfully been added to the word filter with a vote of " + upvotes + "/" + downvotes);
               try {
                 String serverId = event.getServer().get().getIdAsString();
-                JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.settingsLocation)));
+                JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.getSettingsLocation())));
                 JSONArray words = new JSONArray();
                 if(settings.getJSONObject("filters").has(serverId)) { 
                   settings.getJSONObject("filters").getJSONArray(serverId).put(args[1]);
                 }
                 else { words.put(args[1]); settings.getJSONObject("filters").put(serverId, words); }
-                FileWriter f = new FileWriter(main.settings.settingsLocation.toFile(), false);
+                FileWriter f = new FileWriter(main.settings.getSettingsLocation().toFile(), false);
                 f.write(settings.toString(2));
                 f.close();
               } catch(Exception e) {
@@ -99,9 +99,11 @@ public class addFilter {
             else { // if vote has failed
               message.reply("Vote has failed with a vote of " + upvotes + "/" + downvotes);
             }
-          }, 10, TimeUnit.SECONDS); 
+          }, 1, TimeUnit.MINUTES); 
         });
-    } catch(Exception e) { System.out.println("Error while adding filter: " + e); }
+    } catch(Exception e) { 
+      System.out.println("Error while adding filter: " + e); 
+    }
   }
 
   // HACK initialize voters[]

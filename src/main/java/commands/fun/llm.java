@@ -11,7 +11,7 @@ public class llm {
     String fullMsg = "";
     for(int i = 1; i < args.length; i++) { fullMsg = fullMsg + " " + args[i]; }
     System.out.println(fullMsg);
-    HuggingFaceChatModel model = HuggingFaceChatModel.withAccessToken(main.settings.huggingFaceKey);
+    HuggingFaceChatModel model = HuggingFaceChatModel.withAccessToken(main.settings.getHuggingFaceKey());
     String answer = model.generate(fullMsg);
     System.out.println(answer);
     new MessageBuilder() // send the message

@@ -77,10 +77,10 @@ public class voteMute {
                   .respond();
               break;
             }
-          }).removeAfter(1, TimeUnit.MINUTES); // TODO make this dynamic with main.settings.muteTimeLimit
+          }).removeAfter(main.settings.getMuteTimeLimit(), TimeUnit.MINUTES); 
 
           executorService.schedule(() -> {
-            if(upvotes > downvotes && upvotes + downvotes >= main.settings.muteThreshold) { // if vote has gone through
+            if(upvotes > downvotes && upvotes + downvotes >= main.settings.getMuteThreshold()) { // if vote has gone through
               System.out.println("mute called by " + muterId + " has resulted in the mute of " + mutedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply(event.getServer().get().getMemberById(mutedId).get().getMentionTag() + " has been muted with a vote of " + upvotes + "/" + downvotes + ".");
               message.getServer().get().timeoutUser(message.getServer().get().getMemberById(mutedId).get(), Duration.ofHours(Integer.parseInt(args[1]))); //mute user
@@ -89,9 +89,11 @@ public class voteMute {
               System.out.println("mute called by " + muterId + " has failed to mute " + mutedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply("Mute has failed with a vote of " + upvotes + "/" + downvotes);
             }
-          }, 1, TimeUnit.MINUTES); // TODO make this dynamic with main.settings.muteTimeLimit
+          }, main.settings.getMuteTimeLimit(), TimeUnit.MINUTES);
         });
-    } catch(Exception e) { System.out.println(e); }
+    } catch(Exception e) { 
+      System.out.println("Error while muting: " + e); 
+    }
   }
 
   // true = user cannot be muted

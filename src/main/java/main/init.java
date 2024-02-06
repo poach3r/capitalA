@@ -6,10 +6,10 @@ import org.javacord.api.entity.intent.Intent;
 
 public class init {
   public static void main(String[] args) {
-    main.settings.mainFunc(); // parses settings json
+    main.parseSettings.mainFunc(); // parses settings json
 
     DiscordApi api = new DiscordApiBuilder() // create bot object
-      .setToken(main.settings.token)
+      .setToken(main.settings.getToken())
       .addIntents(Intent.MESSAGE_CONTENT)
       .addIntents(Intent.GUILD_MEMBERS)
       .login()

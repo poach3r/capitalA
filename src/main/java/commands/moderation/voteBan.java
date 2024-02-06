@@ -77,10 +77,10 @@ public class voteBan {
                   .respond();
               break;
             }
-          }).removeAfter(1, TimeUnit.MINUTES); // TODO make this dynamic with main.settings.banTimeLimit
+          }).removeAfter(main.settings.getBanTimeLimit(), TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
-            if(upvotes > downvotes && upvotes + downvotes >= main.settings.banThreshold) { // if vote has gone through
+            if(upvotes > downvotes && upvotes + downvotes >= main.settings.getBanThreshold()) { // if vote has gone through
               System.out.println("bann called by " + bannerId + " has resulted in the ban of " + bannedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply(event.getServer().get().getMemberById(bannedId).get().getMentionTag() + " has been banned with a vote of " + upvotes + "/" + downvotes + ".");
               message.getServer().get().timeoutUser(message.getServer().get().getMemberById(bannedId).get(), Duration.ofDays(Integer.parseInt(args[2]))); //ban user
@@ -89,9 +89,11 @@ public class voteBan {
               System.out.println("bann called by " + bannerId + " has failed to ban " + bannedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply("Kick has failed with a vote of " + upvotes + "/" + downvotes);
             }
-          }, 1, TimeUnit.MINUTES); // TODO make this dynamic with main.settings.banTimeLimit
+          }, main.settings.getBanTimeLimit(), TimeUnit.MINUTES); 
         });
-    } catch(Exception e) { System.out.println(e); }
+    } catch(Exception e) {
+      System.out.println("Error while banning: " + e);
+    }
   }
 
   // true = user cannot be banned
