@@ -11,7 +11,7 @@ public class filter {
     filter = initFilter(filter);
     String serverId = event.getServer().get().getIdAsString();
     try { 
-      JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.settingsLocation)));
+      JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.getSettingsLocation())));
 
       if(!settings.getJSONObject("filters").has(serverId)) { return filter; }
 
