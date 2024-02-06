@@ -1,0 +1,38 @@
+{
+  "token": "",
+  "huggingFaceKey": "",
+  "prefix": "$",
+  "votes": {
+    "kicks": {
+      "timeLimit": 2,
+      "threshold": 1
+    },
+
+    "bans": {
+      "timeLimit": 2,
+      "threshold": 10
+    },
+
+    "mutes": {
+      "timeLimit": 1,
+      "threshold": 5
+    },
+    "misc": {
+      "timeLimit": 1,
+      "threshold": 5
+    }
+  },
+
+  "filters": {
+    "default": [
+      "badWord",
+      "worseWord"
+    ],
+    "1185658069670178866": [
+      "uwu",
+      "owo"
+    ]
+  }
+}
+
+
