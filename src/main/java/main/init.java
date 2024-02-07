@@ -5,11 +5,12 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 
 public class init {
+
   public static void main(String[] args) {
-    main.parseSettings.mainFunc(); // parses settings json
+    settings.parseSettings();
 
     DiscordApi api = new DiscordApiBuilder() // create bot object
-      .setToken(main.settings.getToken())
+      .setToken(settings.getToken())
       .addIntents(Intent.MESSAGE_CONTENT)
       .addIntents(Intent.GUILD_MEMBERS)
       .login()

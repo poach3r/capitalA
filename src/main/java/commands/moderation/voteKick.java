@@ -15,20 +15,27 @@ import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.user.User;
 
 public class voteKick {
+  private int upvotes;
+  private int downvotes;
+  private MessageCreateEvent event;
+  private String kickerId;
+  private String kickedId;
+  private User voters[] = new User[50];
+  private ScheduledExecutorService executorService;
 
-  private int upvotes = 0, downvotes = 0;
+  public voteKick(MessageCreateEvent message, String args1) {
+    upvotes = 0;
+    downvotes = 0;
+    event = message;
+    kickerId = message.getMessageAuthor().getIdAsString();
+    kickedId = args1.replace("<", "").replace(">", "").replace("@", "");
+    voters = initVoters(voters);
+    executorService = Executors.newSingleThreadScheduledExecutor();
+  }
 
-  public void mainFunc(MessageCreateEvent event, String args[]) {
-    String kickerId = event.getMessageAuthor().getIdAsString();
-    String kickedId = args[1].replace("<", "").replace(">", "").replace("@", "");
-    User voters[] = new User[50]; // WARNING there is a potential vulnerability where if 50+ people have voted the bot will crash
-    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
-    initVoters(voters, event);
-
-    System.out.println(kickerId + " is attempting to kick " + kickedId);
-
-    if(checkUserValidity(event, args, kickerId, kickedId)) { return; } // validate that the bot wont error 
+  public void mainFunc() {
+    if(checkUserValidity())  // validate that the bot wont error  
+      return;
 
     try {
       new MessageBuilder() // send the message
@@ -59,7 +66,6 @@ public class voteKick {
               case "upvote":
                 voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
                 upvotes += 1;
-                System.out.println("new upvote, current total is " + upvotes);
                 e.getInteraction().createImmediateResponder()
                   .setContent("You have successfully upvoted")
                   .setFlags(MessageFlag.EPHEMERAL)
@@ -69,7 +75,6 @@ public class voteKick {
               case "downvote":
                 voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
                 downvotes += 1;
-                System.out.println("new downvote, current total is " + downvotes);
                 e.getInteraction().createImmediateResponder()
                   .setContent("You have successfully downvoted")
                   .setFlags(MessageFlag.EPHEMERAL)
@@ -80,24 +85,22 @@ public class voteKick {
 
           executorService.schedule(() -> {
             if(upvotes > downvotes && upvotes + downvotes >= main.settings.getKickThreshold()) { // if vote has gone through
-              System.out.println("kick called by " + kickerId + " has resulted in the kick of " + kickedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply(event.getServer().get().getMemberById(kickedId).get().getMentionTag() + " has been kicked with a vote of " + upvotes + "/" + downvotes + "."); // if the message gets 50%> upvotes out of main.settings.kickThreshold>= total votes then the user specified in args[1] is kicked
               message.getServer().get().kickUser(message.getServer().get().getMemberById(kickedId).get()); //kick user
             }
             else { // if vote has failed
-              System.out.println("kick called by " + kickerId + " has failed to kick " + kickedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply("Kick has failed with a vote of " + upvotes + "/" + downvotes);
             }
           }, main.settings.getKickTimeLimit(), TimeUnit.MINUTES);
         });
     } catch(Exception e) { 
-      System.out.println("Error while kicking: " + e); 
+      System.out.println("Error while kicking " + kickedId + " in server " + event.getServer().get().getIdAsString() + ": " + e); 
     }
   }
 
   // true = user cannot be kicked
   // false = what do you think
-  private boolean checkUserValidity(MessageCreateEvent event, String args[], String kickerId, String kickedId) {
+  private boolean checkUserValidity() {
     if(kickerId.equals(kickedId)) { // if user tries to kick themself
       System.out.println(kickerId + " attempted to kick themself");
       event.getChannel().sendMessage("You can't kick yourself.");
@@ -121,15 +124,15 @@ public class voteKick {
       event.getChannel().sendMessage("smh");
       return true;
     }
-
     return false;
   }
 
   // HACK initialize voters[]
-  private void initVoters(User voters[], MessageCreateEvent event) {
+  private User[] initVoters(User voters[]) {
     for(int i = 0; i < voters.length; i++) {
       voters[i] = event.getApi().getYourself();
     }
+    return voters;
   }
 }
 

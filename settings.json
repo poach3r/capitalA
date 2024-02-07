@@ -1,5 +1,5 @@
 {
-  "token": "",
+  "token": "MTIwMjczMjUzNTg0Nzg0NjAyOA.GzhnWE.S-b3R5Fspg7SjYj8XZz_5vMHwr6ThLtofJRI2A",
   "huggingFaceKey": "",
   "prefix": "$",
   "votes": {
@@ -10,16 +10,16 @@
 
     "bans": {
       "timeLimit": 2,
-      "threshold": 10
+      "threshold": 1
     },
 
     "mutes": {
       "timeLimit": 1,
-      "threshold": 5
+      "threshold": 1
     },
     "misc": {
       "timeLimit": 1,
-      "threshold": 5
+      "threshold": 1
     }
   },
 

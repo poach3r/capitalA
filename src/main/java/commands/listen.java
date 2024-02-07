@@ -11,38 +11,40 @@ public class listen implements MessageCreateListener {
     String args[] = event.getMessageContent().split(" "); // split message into individual arguments
     if(event.getMessageAuthor().isBotUser()) return; // filter out bot accounts
     
-    if(args[0] == main.settings.getPrefix() + "ping") 
+    if(args[0].equals(main.settings.getPrefix() + "ping")) {
+      System.out.println("ping");
       commands.fun.ping.mainFunc(event);
+    }
 
-    else if(args[0] == main.settings.getPrefix() + "help")
+    else if(args[0].equals(main.settings.getPrefix() + "help"))
       commands.help.mainFunc(event);
 
-    else if(args[0] == main.settings.getPrefix() + "voteKick") {
-      commands.moderation.voteKick vk = new commands.moderation.voteKick();
-      vk.mainFunc(event, args);
+    else if(args[0].equals(main.settings.getPrefix() + "voteKick")) {
+      commands.moderation.voteKick vk = new commands.moderation.voteKick(event, args[1]);
+      vk.mainFunc();
     }
 
-    else if(args[0] == main.settings.getPrefix() + "voteBan") {
-      commands.moderation.voteBan vb = new commands.moderation.voteBan();
-      vb.mainFunc(event, args);
+    else if(args[0].equals(main.settings.getPrefix() + "voteBan")) {
+      commands.moderation.voteBan vb = new commands.moderation.voteBan(event, args[1], args[2]);
+      vb.mainFunc();
     }
 
 
-    else if(args[0] == main.settings.getPrefix() + "voteMute") {
-      commands.moderation.voteMute vm = new commands.moderation.voteMute();
-      vm.mainFunc(event, args);
+    else if(args[0].equals(main.settings.getPrefix() + "voteMute")) {
+      commands.moderation.voteMute vm = new commands.moderation.voteMute(event, args);
+      vm.mainFunc();
     }
 
-    else if(args[0] == main.settings.getPrefix() + "addFilter") {
-      commands.moderation.addFilter af = new commands.moderation.addFilter();
-      af.mainFunc(event, args);
+    else if(args[0].equals(main.settings.getPrefix() + "addFilter")) {
+      commands.moderation.addFilter af = new commands.moderation.addFilter(event, args[1]);
+      af.mainFunc();
     }
 
-    else if(args[0] == main.settings.getPrefix() + "cat") {
+    else if(args[0].equals(main.settings.getPrefix() + "cat")) {
       commands.fun.cat.mainFunc(event);
     }
 
-    else if(args[0] == main.settings.getPrefix() + "llm") {
+    else if(args[0].equals(main.settings.getPrefix() + "llm")) {
       if(main.settings.getHuggingFaceKey() != "")
 	commands.fun.llm.mainFunc(event, args);
       else

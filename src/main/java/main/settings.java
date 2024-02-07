@@ -8,31 +8,31 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 
 public class settings {
-  private static String token; 
-  private static String prefix; 
-  private static int kickThreshold;
-  private static int kickTimeLimit;
-  private static int banThreshold;
-  private static int banTimeLimit;
-  private static int muteThreshold;
-  private static int muteTimeLimit;
-  private static String huggingFaceKey;
-  private static String filter[] = new String[50];
-  private static Path settingsLocation; 
+  private static String token = ""; 
+  private static String prefix = ""; 
+  private static int kickThreshold = 10;
+  private static int kickTimeLimit = 1;
+  private static int banThreshold = 10;
+  private static int banTimeLimit = 1;
+  private static int muteThreshold = 10;
+  private static int muteTimeLimit = 1;
+  private static String huggingFaceKey = "";
+  private static String filter[] = main.filter.initFilter();
+  private static Path settingsLocation = Paths.get("./settings.json"); 
 
-  public settings() {
-    String token = ""; 
-    String prefix = "$";
-    kickThreshold = 10; 
-    kickTimeLimit = 1;
-    banThreshold = 10;
-    banTimeLimit = 1;
-    muteThreshold = 10;
-    muteTimeLimit = 1;
-    huggingFaceKey = "";
-    filter = main.filter.initFilter(filter); 
-    settingsLocation = Paths.get("./settings.json");
-  }
+  // public settings() {
+  //   String token = ""; 
+  //   String prefix = "$";
+  //   kickThreshold = 10; 
+  //   kickTimeLimit = 1;
+  //   banThreshold = 10;
+  //   banTimeLimit = 1;
+  //   muteThreshold = 10;
+  //   muteTimeLimit = 1;
+  //   huggingFaceKey = "";
+  //   filter = main.filter.initFilter(); 
+  //   settingsLocation = Paths.get("./settings.json");
+  // }
 
   public static void setToken(String t) {
     token = t;
@@ -129,10 +129,8 @@ public class settings {
   public static Path getSettingsLocation() {
     return settingsLocation;
   }
-}
 
-class parseSettings {
-  public static void mainFunc() {
+  public static void parseSettings() {
     if(!settings.getSettingsLocation().toFile().exists()) {
       System.out.println(settings.getSettingsLocation() + " does not exist");
       System.exit(1);
@@ -190,3 +188,6 @@ class parseSettings {
     } catch(Exception e) { System.out.println("Error while reading "  + settings.getSettingsLocation() + " " + e); }
   }
 }
+
+class parseSettings {
+  }

@@ -8,7 +8,7 @@ import org.json.JSONArray;
 public class filter {
   public static String[] server(MessageCreateEvent event) {
     String filter[] = new String[50];
-    filter = initFilter(filter);
+    filter = initFilter();
     String serverId = event.getServer().get().getIdAsString();
     try { 
       JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.getSettingsLocation())));
@@ -27,11 +27,12 @@ public class filter {
   }
 
   // HACK initialize filter[]
-  public static String[] initFilter(String filter[]) {
-    for(int i = 0; i < filter.length; i++) {
-      filter[i] = "this is a hack!!!!!!!!!";
+  public static String[] initFilter() {
+    String f[] = new String[50];
+    for(int i = 0; i < f.length; i++) {
+      f[i] = "this is a hack!!!!!!!!!";
     }
-    return filter;
+    return f;
   }
 }
 

@@ -19,23 +19,30 @@ import java.nio.file.Files;
 import java.io.FileWriter;
 
 public class addFilter {
+  private int upvotes;
+  private int downvotes;
+  private String author;
+  private MessageCreateEvent event;
+  private User voters[] = new User[50];
+  private String word;
+  private ScheduledExecutorService executorService;
 
-  private int upvotes = 0, downvotes = 0;
+  public addFilter(MessageCreateEvent message, String arg1) {
+    upvotes = 0;
+    downvotes = 0;
+    event = message;
+    author = message.getMessageAuthor().getIdAsString();
+    voters = initVoters(voters);
+    word = arg1;
+    executorService = Executors.newSingleThreadScheduledExecutor();
+  }
 
-  public void mainFunc(MessageCreateEvent event, String args[]) {
-    String author = event.getMessageAuthor().getIdAsString();
-    User voters[] = new User[50]; // WARNING there is a potential vulnerability where if 50+ people have voted the bot will crash
-    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
-    initVoters(voters, event);
-
-    System.out.println(author + " wants to add \"" + args[1] + "\" to the word filter");
-
+  public void mainFunc() {
     try {
       new MessageBuilder() // send the message
         .setEmbed(new EmbedBuilder()
-          .setTitle("Add " + args[1] + " to the word filter?")
-          .setDescription(event.getServer().get().getMemberById(author).get().getMentionTag() + " would like to add " + args[1] + " to the word filter.")
+          .setTitle("Add " + word + " to the word filter?")
+          .setDescription(event.getServer().get().getMemberById(author).get().getMentionTag() + " would like to add \"" + word + "\" to the word filter.")
           .setColor(Color.RED))
         .addComponents(
             ActionRow.of(
@@ -59,7 +66,6 @@ public class addFilter {
               case "upvote":
                 voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
                 upvotes += 1;
-                System.out.println("new upvote, current total is " + upvotes);
                 e.getInteraction().createImmediateResponder()
                   .setContent("You have successfully upvoted")
                   .setFlags(MessageFlag.EPHEMERAL)
@@ -69,7 +75,6 @@ public class addFilter {
               case "downvote":
                 voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
                 downvotes += 1;
-                System.out.println("new downvote, current total is " + downvotes);
                 e.getInteraction().createImmediateResponder()
                   .setContent("You have successfully downvoted")
                   .setFlags(MessageFlag.EPHEMERAL)
@@ -80,20 +85,20 @@ public class addFilter {
 
           executorService.schedule(() -> {
             if(upvotes > downvotes && upvotes + downvotes >= 0) { // if vote has gone through
-              message.reply(args[1] + " has successfully been added to the word filter with a vote of " + upvotes + "/" + downvotes);
+              message.reply(word + " has successfully been added to the word filter with a vote of " + upvotes + "/" + downvotes);
               try {
                 String serverId = event.getServer().get().getIdAsString();
                 JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.getSettingsLocation())));
                 JSONArray words = new JSONArray();
-                if(settings.getJSONObject("filters").has(serverId)) { 
-                  settings.getJSONObject("filters").getJSONArray(serverId).put(args[1]);
-                }
-                else { words.put(args[1]); settings.getJSONObject("filters").put(serverId, words); }
+                if(settings.getJSONObject("filters").has(serverId))
+                  settings.getJSONObject("filters").getJSONArray(serverId).put(word);
+                else 
+                  words.put(word); settings.getJSONObject("filters").put(serverId, words);
                 FileWriter f = new FileWriter(main.settings.getSettingsLocation().toFile(), false);
                 f.write(settings.toString(2));
                 f.close();
               } catch(Exception e) {
-                System.out.println("Error while adding word to server filter " + event.getServer().get().getIdAsString() + ": " + e);
+                System.out.println("Error while adding " + word + " to " + event.getServer().get().getIdAsString() + "'s filter: " + e);
               }
             }
             else { // if vote has failed
@@ -107,10 +112,11 @@ public class addFilter {
   }
 
   // HACK initialize voters[]
-  private void initVoters(User voters[], MessageCreateEvent event) {
+  private User[] initVoters(User voters[]) {
     for(int i = 0; i < voters.length; i++) {
       voters[i] = event.getApi().getYourself();
     }
+    return voters;
   }
 }
 

@@ -16,25 +16,34 @@ import org.javacord.api.entity.user.User;
 import java.time.Duration;
 
 public class voteMute {
+  private int upvotes;
+  private int downvotes;
+  private MessageCreateEvent event;
+  private String muterId;
+  private String mutedId;
+  private User voters[] = new User[50];
+  private int muteTime;
+  private ScheduledExecutorService executorService;
 
-  private int upvotes = 0, downvotes = 0;
+  public voteMute(MessageCreateEvent message, String arguments[]) {
+    upvotes = 0;
+    downvotes = 0;
+    event = message;
+    muterId = message.getMessageAuthor().getIdAsString();
+    mutedId = arguments[1].replace("<", "").replace(">", "").replace("@", "");
+    muteTime = Integer.parseInt(arguments[2]);
+    voters = initVoters(voters);
+    executorService = Executors.newSingleThreadScheduledExecutor();
+  }
 
-  public void mainFunc(MessageCreateEvent event, String args[]) {
-    String muterId = event.getMessageAuthor().getIdAsString();
-    String mutedId = args[1].replace("<", "").replace(">", "").replace("@", "");
-    User voters[] = new User[50]; // WARNING there is a potential vulnerability where if 50+ people have voted the bot will crash
-    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
-    initVoters(voters, event);
-
-    System.out.println(muterId + " is attempting to mute " + mutedId);
-
-    if(checkUserValidity(event, args, muterId, mutedId)) { return; } // validate that the bot wont error 
+  public void mainFunc() {
+    if(checkUserValidity()) // validate that the bot wont error 
+      return; 
 
     try {
       new MessageBuilder() // send the message
         .setEmbed(new EmbedBuilder()
-          .setTitle("Mute user " + event.getServer().get().getMemberById(mutedId).get().getName() + " for " + args[2] + " hours?")
+          .setTitle("Mute user " + event.getServer().get().getMemberById(mutedId).get().getName() + " for " + muteTime + " hours?")
           .setDescription(event.getServer().get().getMemberById(muterId).get().getMentionTag() + " has called a vote-mute on " + event.getServer().get().getMemberById(mutedId).get().getMentionTag())
           .setImage(event.getServer().get().getMemberById(mutedId).get().getAvatar())
           .setColor(Color.RED))
@@ -60,7 +69,6 @@ public class voteMute {
               case "upvote":
                 voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
                 upvotes += 1;
-                System.out.println("new upvote, current total is " + upvotes);
                 e.getInteraction().createImmediateResponder()
                   .setContent("You have successfully upvoted")
                   .setFlags(MessageFlag.EPHEMERAL)
@@ -70,7 +78,6 @@ public class voteMute {
               case "downvote":
                 voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
                 downvotes += 1;
-                System.out.println("new downvote, current total is " + downvotes);
                 e.getInteraction().createImmediateResponder()
                   .setContent("You have successfully downvoted")
                   .setFlags(MessageFlag.EPHEMERAL)
@@ -81,24 +88,22 @@ public class voteMute {
 
           executorService.schedule(() -> {
             if(upvotes > downvotes && upvotes + downvotes >= main.settings.getMuteThreshold()) { // if vote has gone through
-              System.out.println("mute called by " + muterId + " has resulted in the mute of " + mutedId + " with a result of " + upvotes + "/" + downvotes);
-              message.reply(event.getServer().get().getMemberById(mutedId).get().getMentionTag() + " has been muted with a vote of " + upvotes + "/" + downvotes + ".");
-              message.getServer().get().timeoutUser(message.getServer().get().getMemberById(mutedId).get(), Duration.ofHours(Integer.parseInt(args[1]))); //mute user
+              message.reply(event.getServer().get().getMemberById(mutedId).get().getMentionTag() + " has been muted with a vote of " + upvotes + "/" + downvotes + " for " + muteTime +  " days.");
+              message.getServer().get().timeoutUser(message.getServer().get().getMemberById(mutedId).get(), Duration.ofHours(muteTime)); //mute user
             }
             else { // if vote has failed
-              System.out.println("mute called by " + muterId + " has failed to mute " + mutedId + " with a result of " + upvotes + "/" + downvotes);
               message.reply("Mute has failed with a vote of " + upvotes + "/" + downvotes);
             }
           }, main.settings.getMuteTimeLimit(), TimeUnit.MINUTES);
         });
     } catch(Exception e) { 
-      System.out.println("Error while muting: " + e); 
+      System.out.println("Error while banning " + mutedId + " in server " + event.getServer().get().getIdAsString() + ": " + e); 
     }
   }
 
   // true = user cannot be muted
   // false = what do you think
-  private boolean checkUserValidity(MessageCreateEvent event, String args[], String muterId, String mutedId) {
+  private boolean checkUserValidity() {
     if(muterId.equals(mutedId)) { // if user tries to mute themself
       System.out.println(muterId + " attempted to mute themself");
       event.getChannel().sendMessage("You can't mute yourself.");
@@ -122,15 +127,15 @@ public class voteMute {
       event.getChannel().sendMessage("smh");
       return true;
     }
-
     return false;
   }
 
   // HACK initialize voters[]
-  private void initVoters(User voters[], MessageCreateEvent event) {
+  private User[] initVoters(User voters[]) {
     for(int i = 0; i < voters.length; i++) {
       voters[i] = event.getApi().getYourself();
     }
+    return voters;
   }
 }
 
