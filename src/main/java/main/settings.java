@@ -1,193 +1,291 @@
-// TODO entire per server configurations
-
 package main;
 
 import org.json.JSONObject;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.io.FileWriter;
+import org.json.JSONArray;
 
 public class settings {
-  private static String token = ""; 
-  private static String prefix = ""; 
-  private static int kickThreshold = 10;
-  private static int kickTimeLimit = 1;
-  private static int banThreshold = 10;
-  private static int banTimeLimit = 1;
-  private static int muteThreshold = 10;
-  private static int muteTimeLimit = 1;
-  private static String huggingFaceKey = "";
-  private static String filter[] = main.filter.initFilter();
-  private static Path settingsLocation = Paths.get("./settings.json"); 
+  private String serverId;
+  private String token; 
+  private String prefix;
+  private int kickThreshold;
+  private int kickTimeLimit;
+  private int banThreshold;
+  private int banTimeLimit;
+  private int muteThreshold;
+  private int muteTimeLimit;
+  private int miscThreshold;
+  private int miscTimeLimit;
+  private String huggingFaceKey;
+  private String filter[] = new String[50];
+  private Path settingsLocation;
 
-  // public settings() {
-  //   String token = ""; 
-  //   String prefix = "$";
-  //   kickThreshold = 10; 
-  //   kickTimeLimit = 1;
-  //   banThreshold = 10;
-  //   banTimeLimit = 1;
-  //   muteThreshold = 10;
-  //   muteTimeLimit = 1;
-  //   huggingFaceKey = "";
-  //   filter = main.filter.initFilter(); 
-  //   settingsLocation = Paths.get("./settings.json");
-  // }
+  public settings(String s) {
+    serverId = s;
+    token = ""; 
+    prefix = "$";
+    kickThreshold = 10; 
+    kickTimeLimit = 1;
+    banThreshold = 10;
+    banTimeLimit = 2;
+    muteThreshold = 5;
+    muteTimeLimit = 1;
+    miscThreshold = 5;
+    miscTimeLimit = 1;
+    huggingFaceKey = "";
+    filter = main.filter.initFilter(); 
+    settingsLocation = Paths.get("./settings.json");
+  }
 
-  public static void setToken(String t) {
+  public void setToken(String t) {
     token = t;
   }
 
-  public static void setPrefix(String p) {
+  public void setPrefix(String p) {
     prefix = p;
   }
 
-  public static void setKickThreshold(int kt) {
+  public void setKickThreshold(int kt) {
     kickThreshold = kt;
   }
 
-  public static void setKickTimeLimit(int ktl) {
+  public void setKickTimeLimit(int ktl) {
     kickTimeLimit = ktl;
   }
 
-  public static void setBanThreshold(int bt) {
+  public void setBanThreshold(int bt) {
     banThreshold = bt;
   }
 
-  public static void setBanTimeLimit(int btl) {
+  public void setBanTimeLimit(int btl) {
     banTimeLimit = btl;
   }
 
-  public static void setMuteThreshold(int mt) {
+  public void setMuteThreshold(int mt) {
     muteThreshold = mt;
   }
 
-  public static void setMuteTimeLimit(int mtl) {
+  public void setMuteTimeLimit(int mtl) {
     muteTimeLimit = mtl;
   }
 
-  public static void setHuggingFaceKey(String hfk) {
+  
+  public void setMiscThreshold(int mt) {
+    miscThreshold = mt;
+  }
+
+  public void setMiscTimeLimit(int mtl) {
+    miscTimeLimit = mtl;
+  }
+
+  public void setHuggingFaceKey(String hfk) {
     huggingFaceKey = hfk;
   }
 
-  public static void setFilter(String f[]) {
+  public void setFilter(String f[]) {
     filter = f;
   }
 
-  public static void setFilter(String f, int i) {
+  public void setFilter(String f, int i) {
     filter[i] = f;
   }
 
-  public static void setSettingsLocation(Path sl) {
+  public void setSettingsLocation(Path sl) {
     settingsLocation = sl;
   }
 
-  public static String getToken() {
+  public String getServerId() {
+    return serverId;
+  }
+
+  public String getToken() {
     return token;
   }
 
-  public static String getPrefix() {
+  public String getPrefix() {
     return prefix;
   }
 
-  public static int getKickThreshold() {
+  public int getKickThreshold() {
     return kickThreshold;
   }
 
-  public static int getKickTimeLimit() {
+  public int getKickTimeLimit() {
     return kickTimeLimit;
   }
 
-  public static int getBanThreshold() {
+  public int getBanThreshold() {
     return banThreshold;
   }
 
-  public static int getBanTimeLimit() {
+  public int getBanTimeLimit() {
     return banTimeLimit;
   }
 
-  public static int getMuteThreshold() {
+  public int getMuteThreshold() {
     return muteThreshold;
   }
 
-  public static int getMuteTimeLimit() {
+  public int getMuteTimeLimit() {
     return muteTimeLimit;
   }
 
-  public static String getHuggingFaceKey() {
+    public int getMiscThreshold() {
+    return miscThreshold;
+  }
+
+  public int getMiscTimeLimit() {
+    return miscTimeLimit;
+  }
+
+  public String getHuggingFaceKey() {
     return huggingFaceKey;
   }
 
-  public static String[] getFilter() {
+  public String[] getFilter() {
     return filter;
   }
 
-  public static String getFilter(int i) {
+  public String getFilter(int i) {
     return filter[i]; 
   }
 
-  public static Path getSettingsLocation() {
+  public Path getSettingsLocation() {
     return settingsLocation;
   }
 
-  public static void parseSettings() {
-    if(!settings.getSettingsLocation().toFile().exists()) {
-      System.out.println(settings.getSettingsLocation() + " does not exist");
-      System.exit(1);
-    }
-
-    System.out.println("Parsing " + settings.getSettingsLocation());
-    try { // parse settings json 
-      JSONObject settingsJS = new JSONObject(new String(Files.readAllBytes(settings.getSettingsLocation())));
-
+  public void init() { 
+    try {
+      JSONObject settingsJS = new JSONObject(new String(Files.readAllBytes(getSettingsLocation())));
       // check for token, if it doesnt exist then quit
       if(settingsJS.has("token"))
-        settings.setToken(settingsJS.getString("token"));
+        setToken(settingsJS.getString("token"));
+
       else {
-        System.out.println(settings.getSettingsLocation() + " does not have JSON key 'token'");
+        System.out.println("You have not set a token.");
         System.exit(1);
       }
 
-      if(settingsJS.has("votes")) { // spahgetti ahh code
-        if(settingsJS.getJSONObject("votes").has("kicks")) {
-          if(settingsJS.getJSONObject("votes").getJSONObject("kicks").has("threshold"))
-            settings.setKickThreshold(settingsJS.getJSONObject("votes").getJSONObject("kicks").getInt("threshold"));
-          if(settingsJS.getJSONObject("votes").getJSONObject("kicks").has("timeLimit")) 
-            settings.setKickTimeLimit(settingsJS.getJSONObject("votes").getJSONObject("kicks").getInt("timeLimit"));
-        }
-
-        if(settingsJS.getJSONObject("votes").has("bans")) {
-          if(settingsJS.getJSONObject("votes").getJSONObject("bans").has("threshold"))
-            settings.setBanThreshold(settingsJS.getJSONObject("votes").getJSONObject("bans").getInt("threshold"));
-          if(settingsJS.getJSONObject("votes").getJSONObject("bans").has("timeLimit"))
-            settings.setBanTimeLimit(settingsJS.getJSONObject("votes").getJSONObject("bans").getInt("timeLimit"));
-        }
-
-        if(settingsJS.getJSONObject("votes").has("mutes")) {
-          if(settingsJS.getJSONObject("votes").getJSONObject("mutes").has("threshold"))
-            settings.setMuteThreshold(settingsJS.getJSONObject("votes").getJSONObject("mutes").getInt("threshold"));
-          if(settingsJS.getJSONObject("votes").getJSONObject("mutes").has("timeLimit")) 
-            settings.setMuteTimeLimit(settingsJS.getJSONObject("votes").getJSONObject("mutes").getInt("timeLimit"));
-        }
-      }
-
-      if(settingsJS.has("prefix"))
-        settings.setPrefix(settingsJS.getString("prefix"));
-
       if(settingsJS.has("huggingFaceKey"))
-        settings.setHuggingFaceKey(settingsJS.getString("huggingFaceKey"));
-      
-      // load filter
-      if(settingsJS.has("filters")) {
-        if(settingsJS.getJSONObject("filters").has("default")) {
-          for(int i = 0; i < settingsJS.getJSONObject("filters").getJSONArray("default").length(); i++) {
-            settings.setFilter(settingsJS.getJSONObject("filters").getJSONArray("default").getString(i), i);
+        setHuggingFaceKey(settingsJS.getString("huggingFaceKey"));
+
+    } catch(Exception e) {
+      System.out.println("Error while initializing settings: " + e);
+    }
+  }
+
+  public void parseSettings() { 
+    if(!getSettingsLocation().toFile().exists()) {
+      System.out.println(getSettingsLocation() + " does not exist");
+      System.exit(1);
+    }
+
+    try { // parse settings json 
+      JSONObject settingsJS = new JSONObject(new String(Files.readAllBytes(getSettingsLocation())));
+
+      if(settingsJS.has(getServerId())) { // this fucking sucks, im gonna do it anywaus
+        if(settingsJS.getJSONObject(getServerId()).has("votes")) {
+          if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").has("kicks")) {
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("kicks").has("threshold")) {
+              setKickThreshold(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("kicks").getInt("threshold"));
+              System.out.println("kickThreshold: " + getKickThreshold());
+            }
+
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("kicks").has("timeLimit")) {
+              setKickTimeLimit(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("kicks").getInt("timeLimit"));
+              System.out.println("kickTimeLimit: " + getKickThreshold());
+            }
+          }
+
+          if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").has("bans")) {
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("bans").has("threshold")) {
+              setBanThreshold(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("bans").getInt("threshold"));
+              System.out.println("banThreshold: " + getBanThreshold());
+            }
+
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("bans").has("timeLimit")) {
+              setBanTimeLimit(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("bans").getInt("timeLimit"));
+              System.out.println("banTimeLimit: " + getBanTimeLimit());
+            }
+          }
+
+          if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").has("mutes")) {
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("mutes").has("threshold")) {
+              setMuteThreshold(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("mutes").getInt("threshold"));
+              System.out.println("muteThreshold: " + getMuteThreshold());
+            }
+
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("mutes").has("timeLimit")) {
+              setMuteTimeLimit(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("mutes").getInt("timeLimit"));
+              System.out.println("muteTimeLimit: " + getMuteTimeLimit());
+            }
+          }
+
+          if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").has("misc")) {
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("misc").has("threshold")) {
+              setMiscThreshold(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("misc").getInt("threshold"));
+              System.out.println("miscThreshold: " + getMiscThreshold());
+            }
+
+            if(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("misc").has("timeLimit")) {
+              setMiscTimeLimit(settingsJS.getJSONObject(getServerId()).getJSONObject("votes").getJSONObject("misc").getInt("timeLimit"));
+              System.out.println("miscTimeLimit: " + getMiscTimeLimit());
+            }
           }
         }
+
+        if(settingsJS.getJSONObject(getServerId()).has("prefix")) { 
+          setPrefix(settingsJS.getJSONObject(getServerId()).getString("prefix"));
+          System.out.println("prefix: " + getPrefix());
+        }
+      
+        System.out.println("getting filter");
+        if(settingsJS.getJSONObject(getServerId()).has("filter")) {
+          for(int i = 0; i < settingsJS.getJSONObject(getServerId()).getJSONArray("filter").length(); i++)
+            setFilter(settingsJS.getJSONObject(getServerId()).getJSONArray("filter").getString(i), i);
+        }
+      } else { // if server does not have configuration, create it
+        System.out.println(getServerId() + " does not have a configuration, creating it using the defaults.");
+        JSONObject server = new JSONObject();
+        JSONObject votes = new JSONObject();
+        server.put("votes", votes);
+
+        JSONObject kicks = new JSONObject();
+        kicks.put("timeLimit", getKickTimeLimit());
+        kicks.put("threshold", getKickThreshold());
+        votes.put("kicks", kicks);
+
+        JSONObject bans = new JSONObject();
+        bans.put("timeLimit", getBanTimeLimit());
+        bans.put("threshold", getBanThreshold());
+        votes.put("bans", bans);
+
+        JSONObject mutes = new JSONObject();
+        mutes.put("timeLimit", getMuteTimeLimit());
+        mutes.put("threshold", getMuteThreshold());
+        votes.put("mutes", mutes);
+
+        JSONObject misc = new JSONObject();
+        misc.put("timeLimit", getMiscTimeLimit());
+        misc.put("threshold", getMiscThreshold());
+        votes.put("misc", misc);
+
+        JSONArray filter = new JSONArray();
+        server.put("filter", filter);
+
+        server.put("prefix", getPrefix());
+
+        settingsJS.put(getServerId(), server);
+        FileWriter f = new FileWriter(getSettingsLocation().toFile(), false);
+        f.write(settingsJS.toString(2));
+        f.close();
       }
-    } catch(Exception e) { System.out.println("Error while reading "  + settings.getSettingsLocation() + " " + e); }
+    } catch(Exception e) { 
+      System.out.println("Error while reading "  + getSettingsLocation() + " " + e);
+    }
   }
 }
 
-class parseSettings {
-  }

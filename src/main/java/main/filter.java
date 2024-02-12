@@ -1,29 +1,18 @@
 package main;
 
-import org.json.JSONObject;
-import java.nio.file.Files;
 import org.javacord.api.event.message.MessageCreateEvent;
-import org.json.JSONArray;
+import java.time.Duration;
 
 public class filter {
-  public static String[] server(MessageCreateEvent event) {
-    String filter[] = new String[50];
-    filter = initFilter();
-    String serverId = event.getServer().get().getIdAsString();
-    try { 
-      JSONObject settings = new JSONObject(new String(Files.readAllBytes(main.settings.getSettingsLocation())));
-
-      if(!settings.getJSONObject("filters").has(serverId)) { return filter; }
-
-      JSONArray temp = settings.getJSONObject("filters").getJSONArray(serverId);
-
-      for(int i = 0; i < temp.length(); i++) {
-        filter[i] = temp.getString(i);
+  public static void mainFunc(MessageCreateEvent event, String args[], settings serverSettings) {
+    for(String word : serverSettings.getFilter()) {
+      if(event.getMessageContent().contains(word)) {
+	System.out.println("muted user " + event.getMessageAuthor().getIdAsString() + " for saying " + word + " in server " + event.getServer().get().getIdAsString());
+	event.getMessage().delete();
+	event.getServer().get().timeoutUser(event.getServer().get().getMemberById(event.getMessageAuthor().getId()).get(), Duration.ofDays(1));
+	event.getChannel().sendMessage(event.getServer().get().getMemberById(event.getMessageAuthor().getId()).get().getMentionTag() + " has been muted for 1 day for saying a banned word.");
       }
-    } catch(Exception e) {
-      System.out.println("Error while parsing server filter: " + e);
     }
-    return filter;
   }
 
   // HACK initialize filter[]

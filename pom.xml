@@ -5,7 +5,7 @@
   <groupId>org.poacher</groupId>
   <artifactId>capitalA</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 
   <properties>
     <maven.compiler.source>20</maven.compiler.source>
@@ -35,16 +35,6 @@
       <artifactId>json</artifactId>
       <version>20231013</version>
     </dependency>
-    <dependency>
-      <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j-core</artifactId>
-      <version>0.26.1</version>
-    </dependency>
-    <dependency>
-      <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j-hugging-face</artifactId>
-      <version>0.26.1</version>
-    </dependency>
   </dependencies>
 
   <build>
@@ -72,7 +62,7 @@
               </filters>
 	      <transformers>
 		<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-		  <mainClass>main.init</mainClass>
+		  <mainClass>init</mainClass>
 		</transformer>
 	      </transformers>
 	    </configuration>

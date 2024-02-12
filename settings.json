@@ -1,38 +1,3 @@
 {
-  "token": "MTIwMjczMjUzNTg0Nzg0NjAyOA.GzhnWE.S-b3R5Fspg7SjYj8XZz_5vMHwr6ThLtofJRI2A",
-  "huggingFaceKey": "",
-  "prefix": "$",
-  "votes": {
-    "kicks": {
-      "timeLimit": 2,
-      "threshold": 1
-    },
-
-    "bans": {
-      "timeLimit": 2,
-      "threshold": 1
-    },
-
-    "mutes": {
-      "timeLimit": 1,
-      "threshold": 1
-    },
-    "misc": {
-      "timeLimit": 1,
-      "threshold": 1
-    }
-  },
-
-  "filters": {
-    "default": [
-      "badWord",
-      "worseWord"
-    ],
-    "1185658069670178866": [
-      "uwu",
-      "owo"
-    ]
-  }
+  "token": "put your token here",
 }
-
-
