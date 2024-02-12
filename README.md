@@ -18,6 +18,8 @@ You can either use my own instance of the bot (currently not available but it sh
 
 ## Commands
 
+Please note that the default prefix is "$" and is required before all commands.
+
 | Command | Arg 1  | Arg 2  | Arg 3 | Action                                                                                  |
 |---------|--------|--------|-------|-----------------------------------------------------------------------------------------|
 | set     | filter | add    | WORD  | Adds the word specified in argument 3 to your server's filter.                          |
