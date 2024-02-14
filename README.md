@@ -16,6 +16,15 @@ I think its fair to assume that the majority of Discord users dislike moderators
 
 You can either use my own instance of the bot (currently not available but it should be soon) or host your own instance.
 
+## Instances
+
+A list of bot instances that I know of.
+
+| Name  | Description                                  | Host    | Link |
+|-------|----------------------------------------------|---------|------|
+| planA | The ONLY official instance,  currently down. | poacher | N/A  |
+| planB | My personal testing instance, private.       | poacher | N/A  |
+
 ## Commands
 
 Please note that the default prefix is "$" and is required before all commands.
@@ -30,9 +39,35 @@ Please note that the default prefix is "$" and is required before all commands.
 
 ## Self-hosting
 
-Firstly, you'll need to install Java and Maven, if you are using NixOS you can simply use the flake to install the proper dependencies. Next, clone the program with `git clone https://github.com/poach3r/capitalA` then compile it with `mvn clean install`, if all goes well it should produce a jar in the target directory.
-Now you can run the program with `java -jar ./target/capitala-VERSION.java`
+Firstly, you'll need to install Java and Maven, if you are using NixOS you can simply use the flake to install the proper dependencies. 
 
-## Settings
+Debian/Ubuntu: `sudo apt install default-jre default-jdk maven`
 
-If you decide to self-host, the only setting you need to change is the token specified in the object "token". 
+Fedora: `sudo dnf install java-latest-openjdk.x86_64 java-latest-openjdk-devel.x86_64 maven`
+
+Arch: `sudo pacman -S jdk-openjdk jre-openjdk maven`
+
+Windows (scoop): 
+
+```
+scoop bucket add java
+scoop bucket add main
+scoop install openjdk
+scoop install main/maven
+```
+
+Next, clone the program
+
+`git clone https://github.com/poach3r/capitalA` 
+
+Then compile it with Maven
+
+`mvn clean install`
+
+If all goes well it should produce a jar in the target directory. Now you can run the program.
+
+`java -jar ./target/capitala-VERSION.java`
+
+### Settings
+
+The only setting you need to change is the token specified in the object "token". 
