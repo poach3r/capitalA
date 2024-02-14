@@ -1,5 +1,6 @@
-assets/cats/
 target/
+.settings/
+.settings.json
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

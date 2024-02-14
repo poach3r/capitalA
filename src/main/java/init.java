@@ -18,27 +18,36 @@ public class init {
     // add listeners to every server the bot is in
     System.out.println("Adding listeners to servers.");
     for(Object server : api.getServers().toArray()) {
-      System.out.println(server);
-      String serverId = server.toString().split(" ")[2].replace(",", " ").trim(); // this sucks
-
-      // get server settings
-      main.settings serverSettings = new main.settings(serverId);
-      serverSettings.parseSettings();
-
-      api.getServerById(serverId).get().addMessageCreateListener(event -> {
-        String arguments[] = event.getMessageContent().split(" ");
-
-        // if the sender is a bot then skip all parsing
-        if(event.getMessageAuthor().isBotUser())
-          return;
-
-        // filter the message
-        main.filter.mainFunc(event, arguments, serverSettings);
-
-        commands.parseCommands.mainFunc(event, arguments, serverSettings);
-      });
+      serverMessageListen(server, api);
     }
 
+    // listen for server joins
+    api.addServerJoinListener(event -> {
+      serverMessageListen(event.getServer(), api);
+    });
+
     System.out.println("You can invite the bot by using the following url: " + api.createBotInvite()); // print invite url
+  }
+
+  public static void serverMessageListen(Object server, DiscordApi api) {
+    System.out.println(server);
+    String serverId = server.toString().split(" ")[2].replace(",", " ").trim(); // this sucks
+
+    // get server settings
+    main.settings serverSettings = new main.settings(serverId);
+    serverSettings.parseSettings();
+
+    api.getServerById(serverId).get().addMessageCreateListener(event -> {
+      String arguments[] = event.getMessageContent().split(" ");
+
+      // if the sender is a bot then skip all parsing
+      if(event.getMessageAuthor().isBotUser())
+        return;
+
+        // filter the message
+      main.filter.mainFunc(event, arguments, serverSettings);
+
+      commands.parseCommands.mainFunc(event, arguments, serverSettings);
+    });
   }
 }
