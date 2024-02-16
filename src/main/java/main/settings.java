@@ -22,6 +22,8 @@ public class settings {
   private String huggingFaceKey;
   private String filter[] = new String[50];
   private Path settingsLocation;
+  private String joinMessage; 
+  private int joinTime;
 
   public settings(String s) {
     serverId = s;
@@ -38,6 +40,8 @@ public class settings {
     huggingFaceKey = "";
     filter = main.filter.initFilter(); 
     settingsLocation = Paths.get("./settings.json");
+    joinMessage = "Thanks for joining " + s + "! To prevent raids, you are currently banned from voting in elections, this will be lifted in 3 days.";
+    joinTime = 3;
   }
 
   public void setToken(String t) {
@@ -95,6 +99,14 @@ public class settings {
 
   public void setSettingsLocation(Path sl) {
     settingsLocation = sl;
+  }
+
+  public void setJoinMessage(String j) {
+    joinMessage = j;
+  }
+
+  public void setJoinTime(int t) {
+    joinTime = t;
   }
 
   public String getServerId() {
@@ -155,6 +167,14 @@ public class settings {
 
   public Path getSettingsLocation() {
     return settingsLocation;
+  }
+
+  public String getJoinMessage() {
+    return joinMessage;
+  }
+
+  public int getJoinTime() {
+    return joinTime;
   }
 
   public void init() { 
@@ -237,12 +257,24 @@ public class settings {
           }
         }
 
+        // anti raid
+        if(settingsJS.getJSONObject(getServerId()).has("antiRaid")) {
+          if(settingsJS.getJSONObject(getServerId()).getJSONObject("antiRaid").has("joinMessage")) {
+            setJoinMessage(settingsJS.getJSONObject(getServerId()).getJSONObject("antiRaid").getString("joinMessage"));
+            System.out.println("joinMessage: " + getJoinMessage());
+          }
+
+          if(settingsJS.getJSONObject(getServerId()).getJSONObject("antiRaid").has("joinTime")) {
+            setJoinTime(settingsJS.getJSONObject(getServerId()).getJSONObject("antiRaid").getInt("joinTime"));
+            System.out.println("joinMessage: " + getJoinTime());
+          }
+        }
+
         if(settingsJS.getJSONObject(getServerId()).has("prefix")) { 
           setPrefix(settingsJS.getJSONObject(getServerId()).getString("prefix"));
           System.out.println("prefix: " + getPrefix());
         }
       
-        System.out.println("getting filter");
         if(settingsJS.getJSONObject(getServerId()).has("filter")) {
           for(int i = 0; i < settingsJS.getJSONObject(getServerId()).getJSONArray("filter").length(); i++)
             setFilter(settingsJS.getJSONObject(getServerId()).getJSONArray("filter").getString(i), i);
@@ -250,8 +282,8 @@ public class settings {
       } else { // if server does not have configuration, create it
         System.out.println(getServerId() + " does not have a configuration, creating it using the defaults.");
         JSONObject server = new JSONObject();
+
         JSONObject votes = new JSONObject();
-        server.put("votes", votes);
 
         JSONObject kicks = new JSONObject();
         kicks.put("timeLimit", getKickTimeLimit());
@@ -272,6 +304,13 @@ public class settings {
         misc.put("timeLimit", getMiscTimeLimit());
         misc.put("threshold", getMiscThreshold());
         votes.put("misc", misc);
+
+        server.put("votes", votes);
+
+        JSONObject antiRaid = new JSONObject();
+        antiRaid.put("joinMessage", getJoinMessage());
+        antiRaid.put("joinTime", getJoinTime());
+        server.put("antiRaid", antiRaid);
 
         JSONArray filter = new JSONArray();
         server.put("filter", filter);

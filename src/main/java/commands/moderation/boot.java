@@ -1,3 +1,5 @@
+// A monolithic class for moderation commands
+
 package commands.moderation;
 
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -12,6 +14,7 @@ import java.util.concurrent.Executors;
 import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.user.User;
 import java.time.Duration;
+import org.javacord.api.event.interaction.ButtonClickEvent;
 
 public class boot {
   private int upvotes;
@@ -74,39 +77,8 @@ public class boot {
         .send(event.getChannel())
         .thenAcceptAsync(message -> {
           message.addButtonClickListener( e -> { // get votes
-            String type = e.getButtonInteraction().getCustomId();
-            for(User voter : voters) {
-              if(voter.equals(e.getButtonInteraction().getUser())) {
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have already voted!")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-                return;
-              }
-            }
-
-            switch(type) {
-              case "upvote":
-                for(User voter : voters) {
-                  System.out.println(voter);
-                }
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                upvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully upvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-
-              case "downvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                downvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully downvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-            }
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
           }).removeAfter(serverSettings.getKickTimeLimit(), TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
@@ -139,38 +111,8 @@ public class boot {
         .send(event.getChannel())
         .thenAcceptAsync(message -> {
           message.addButtonClickListener( e -> { // get votes
-            String type = e.getButtonInteraction().getCustomId();
-            for(User voter : voters) {
-              if(voter.equals(e.getButtonInteraction().getUser())) {
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have already voted!")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-                return;
-              }
-            }
-
-            switch(type) {
-              case "upvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                upvotes += 1;
-                System.out.println("new upvote, current total is " + upvotes);
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully upvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-
-              case "downvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                downvotes += 1;
-                System.out.println("new downvote, current total is " + downvotes);
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully downvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-            }
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
           }).removeAfter(serverSettings.getBanTimeLimit(), TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
@@ -204,35 +146,8 @@ public class boot {
         .thenAcceptAsync(message -> {
           message.addButtonClickListener( e -> { // get votes
             String type = e.getButtonInteraction().getCustomId();
-            for(User voter : voters) {
-              if(voter.equals(e.getButtonInteraction().getUser())) {
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have already voted!")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-                return;
-              }
-            }
-
-            switch(type) {
-              case "upvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                upvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully upvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-
-              case "downvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                downvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully downvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-            }
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
           }).removeAfter(serverSettings.getMuteTimeLimit(), TimeUnit.MINUTES); 
 
           executorService.schedule(() -> {
@@ -251,6 +166,23 @@ public class boot {
   }
 
   private boolean userIsValid() {
+    if(!event.getServer().get()
+        .getMemberById(
+          event.getMessageAuthor()
+          .getId())
+        .get()
+        .getRoles(
+          event.getServer().get()
+        )
+        .contains(
+          event.getServer().get().getRolesByName("Voter").get(0)
+        )
+    ) {
+      System.out.println(author + " does not have permission to call votes.");
+      event.getChannel().sendMessage("You do not have permission to call votes.");
+      return false;
+    }
+
     if(author.equals(victim)) { // if user tries to kick themself
       System.out.println(author + " attempted to boot themself");
       event.getChannel().sendMessage("You can't boot yourself.");
@@ -282,5 +214,72 @@ public class boot {
       voters[i] = event.getApi().getYourself();
     }
     return voters;
+  }
+
+  // check if user has already voted
+  private boolean alreadyVoted(ButtonClickEvent e) {
+    for(User voter : voters) {
+      if(voter.equals(e.getButtonInteraction().getUser())) {
+        e.getInteraction().createImmediateResponder()
+        .setContent("You have already voted!")
+        .setFlags(MessageFlag.EPHEMERAL)
+        .respond();
+        return true;
+      }
+    } 
+    return false;
+  }
+
+  // check if user has the right to vote
+  private boolean canVote(ButtonClickEvent e) {
+    if(!e.getButtonInteraction()
+        .getUser()
+        .getRoles(
+        e.getButtonInteraction()
+        .getServer().get())
+        .contains(
+          event.getServer().get().
+          getRolesByName("Voter").get(0))
+    ) {
+      e.getInteraction().createImmediateResponder()
+        .setContent("You don't have permission to vote.")
+        .setFlags(MessageFlag.EPHEMERAL)
+        .respond();
+      return false;
+    }
+    
+    else if(e.getButtonInteraction().getUser().getIdAsString().equals(author)) {
+      e.getInteraction().createImmediateResponder()
+        .setContent("You cannot vote on your own poll.")
+        .setFlags(MessageFlag.EPHEMERAL)
+        .respond();
+      return false;
+    }
+
+    return true;
+  }
+
+
+  // parse vote
+  private void getVote(ButtonClickEvent e, String type) {
+    switch(type) {
+      case "upvote":
+        voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+        upvotes += 1;
+        e.getInteraction().createImmediateResponder()
+          .setContent("You have successfully upvoted")
+          .setFlags(MessageFlag.EPHEMERAL)
+          .respond();
+        break;
+
+        case "downvote":
+          voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+          downvotes += 1;
+          e.getInteraction().createImmediateResponder()
+            .setContent("You have successfully downvoted")
+            .setFlags(MessageFlag.EPHEMERAL)
+            .respond();
+        break;
+    }
   }
 }

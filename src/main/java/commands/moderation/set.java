@@ -1,3 +1,5 @@
+// A monolithic class for settings commands
+
 package commands.moderation;
 
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -15,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.nio.file.Files;
 import java.io.FileWriter;
+import org.javacord.api.event.interaction.ButtonClickEvent;
 
 public class set {
   private int upvotes;
@@ -54,6 +57,17 @@ public class set {
         changePrefix();
       break;
 
+      case "antiRaid": 
+        switch(args[2]) {
+          case "joinMessage":
+          break;
+
+          case "time":
+            setJoinTime(); 
+          break;
+        }
+      break;
+
       default:
         System.out.println(event.getMessageAuthor().getIdAsString() + " attempted to set invalid setting.");
       return;
@@ -82,36 +96,8 @@ public class set {
         .send(event.getChannel())
         .thenAcceptAsync(message -> {
           message.addButtonClickListener( e -> { // get votes
-            String type = e.getButtonInteraction().getCustomId();
-            for(User voter : voters) {
-              if(voter.equals(e.getButtonInteraction().getUser())) {
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have already voted!")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-                return;
-              }
-            }
-
-            switch(type) {
-              case "upvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                upvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully upvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-
-              case "downvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                downvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully downvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-            }
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
           }).removeAfter(serverSettings.getMiscTimeLimit(), TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
@@ -156,36 +142,8 @@ public class set {
         .send(event.getChannel())
         .thenAcceptAsync(message -> {
           message.addButtonClickListener( e -> { // get votes
-            String type = e.getButtonInteraction().getCustomId();
-            for(User voter : voters) {
-              if(voter.equals(e.getButtonInteraction().getUser())) {
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have already voted!")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-                return;
-              }
-            }
-
-            switch(type) {
-              case "upvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                upvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully upvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-
-              case "downvote":
-                voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
-                downvotes += 1;
-                e.getInteraction().createImmediateResponder()
-                  .setContent("You have successfully downvoted")
-                  .setFlags(MessageFlag.EPHEMERAL)
-                  .respond();
-              break;
-            }
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
           }).removeAfter(serverSettings.getMiscTimeLimit(), TimeUnit.MINUTES);
 
           executorService.schedule(() -> {
@@ -213,5 +171,163 @@ public class set {
       System.out.println("Error while adding filter: " + e); 
     }
   }
+
+  private void setJoinMessage() {
+    try {
+      new MessageBuilder() // send the message
+        .setEmbed(new EmbedBuilder()
+          .setTitle("Change the voting message to \"" + args[3] + "\"?")
+          .setDescription(event.getServer().get().getMemberById(author).get().getMentionTag() + " would like to change the voting message to \"" + args[3] + "\"")
+          .setColor(Color.GREEN))
+        .addComponents(
+            ActionRow.of(
+              Button.success("upvote", "Yes"),
+              Button.danger("downvote", "No")))
+        .send(event.getChannel())
+        .thenAcceptAsync(message -> {
+          message.addButtonClickListener( e -> { // get votes
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
+          }).removeAfter(serverSettings.getMiscTimeLimit(), TimeUnit.MINUTES);
+
+          executorService.schedule(() -> {
+            if(upvotes > downvotes && upvotes + downvotes > serverSettings.getMiscThreshold()) { // if vote has gone through
+              message.reply("The join message has successfully been changed to \"" + args[3] + "\" with a vote of " + upvotes + "/" + downvotes);
+              try {
+                JSONObject settings = new JSONObject(new String(Files.readAllBytes(serverSettings.getSettingsLocation())));
+
+                settings.getJSONObject(serverSettings.getServerId()).getJSONObject("antiRaid").put("joinMessage", args[3]);
+
+                FileWriter f = new FileWriter(serverSettings.getSettingsLocation().toFile(), false);
+                f.write(settings.toString(2));
+                f.close();
+
+                serverSettings.parseSettings();
+              } catch(Exception e) {
+                System.out.println("Error while adding " + args[3] + " to " + event.getServer().get().getIdAsString() + "'s filter: " + e);
+              }
+            }
+            else { // if vote has failed
+              message.reply("Vote has failed with a vote of " + upvotes + "/" + downvotes);
+            }
+          }, serverSettings.getMiscTimeLimit(), TimeUnit.MINUTES); 
+        });
+    } catch(Exception e) { 
+      System.out.println("Error while adding filter: " + e); 
+    }
+  }
+
+
+  private void setJoinTime() {
+    try {
+      new MessageBuilder() // send the message
+        .setEmbed(new EmbedBuilder()
+          .setTitle("Change time before voting rights to " + args[3] + " days?")
+          .setDescription(event.getServer().get().getMemberById(author).get().getMentionTag() + " would like to change the time till eligibility to" + args[3] + " days.")
+          .setColor(Color.GREEN))
+        .addComponents(
+            ActionRow.of(
+              Button.success("upvote", "Yes"),
+              Button.danger("downvote", "No")))
+        .send(event.getChannel())
+        .thenAcceptAsync(message -> {
+          message.addButtonClickListener( e -> { // get votes
+            if(canVote(e) && !alreadyVoted(e))
+              getVote(e, e.getButtonInteraction().getCustomId());
+          }).removeAfter(serverSettings.getMiscTimeLimit(), TimeUnit.MINUTES);
+
+          executorService.schedule(() -> {
+            if(upvotes > downvotes && upvotes + downvotes > serverSettings.getMiscThreshold()) { // if vote has gone through
+              message.reply("The time before eligibility has been successfully changed to " + args[3] + " days with a vote of " + upvotes + "/" + downvotes);
+              try {
+                JSONObject settings = new JSONObject(new String(Files.readAllBytes(serverSettings.getSettingsLocation())));
+
+                settings.getJSONObject(serverSettings.getServerId()).getJSONObject("antiRaid").put("joinTime", args[3]);
+
+                FileWriter f = new FileWriter(serverSettings.getSettingsLocation().toFile(), false);
+                f.write(settings.toString(2));
+                f.close();
+
+                serverSettings.parseSettings();
+              } catch(Exception e) {
+                System.out.println("Error while adding " + args[3] + " to " + event.getServer().get().getIdAsString() + "'s filter: " + e);
+              }
+            }
+            else { // if vote has failed
+              message.reply("Vote has failed with a vote of " + upvotes + "/" + downvotes);
+            }
+          }, serverSettings.getMiscTimeLimit(), TimeUnit.MINUTES); 
+        });
+    } catch(Exception e) { 
+      System.out.println("Error while adding filter: " + e); 
+    }
+  }
+
+  // check if user has already voted
+  private boolean alreadyVoted(ButtonClickEvent e) {
+    for(User voter : voters) {
+      if(voter.equals(e.getButtonInteraction().getUser())) {
+        e.getInteraction().createImmediateResponder()
+        .setContent("You have already voted!")
+        .setFlags(MessageFlag.EPHEMERAL)
+        .respond();
+        return true;
+      }
+    } 
+    return false;
+  }
+
+  // check if user has the right to vote
+  private boolean canVote(ButtonClickEvent e) {
+    if(!e.getButtonInteraction()
+        .getUser()
+        .getRoles(
+        e.getButtonInteraction()
+        .getServer().get())
+        .contains(
+          event.getServer().get().
+          getRolesByName("Voter").get(0))
+    ) {
+      e.getInteraction().createImmediateResponder()
+        .setContent("You don't have permission to vote.")
+        .setFlags(MessageFlag.EPHEMERAL)
+        .respond();
+      return false;
+    }
+    
+    else if(e.getButtonInteraction().getUser().getIdAsString().equals(author)) {
+      e.getInteraction().createImmediateResponder()
+        .setContent("You cannot vote on your own poll.")
+        .setFlags(MessageFlag.EPHEMERAL)
+        .respond();
+      return false;
+    }
+
+    return true;
+  }
+
+  // parse vote
+  private void getVote(ButtonClickEvent e, String type) {
+    switch(type) {
+      case "upvote":
+        voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+        upvotes += 1;
+        e.getInteraction().createImmediateResponder()
+          .setContent("You have successfully upvoted")
+          .setFlags(MessageFlag.EPHEMERAL)
+          .respond();
+        break;
+
+        case "downvote":
+          voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+          downvotes += 1;
+          e.getInteraction().createImmediateResponder()
+            .setContent("You have successfully downvoted")
+            .setFlags(MessageFlag.EPHEMERAL)
+            .respond();
+        break;
+    }
+  }
+
 }
 

@@ -8,6 +8,10 @@
 
 capitalA is an open source Discord bot which allows you to moderate without moderators. All administration actions are done through democratic polls and predetermined actions, for example, any user can vote to mute, kick, or ban, any other user and as long as the predetermined amount of votes is reached within the predetermined time limit.
 
+**[Changelog](./CHANGELOG.md)**
+
+**[Roadmap](./ROADMAP.md)**
+
 # Why?
 
 I think its fair to assume that the majority of Discord users dislike moderators, however they have always been seen as a necessity. After I saw a gross abuse of power in a Discord server I frequented resulting in my ban, I had the idea for this bot as a way of preventing admin abuse. 
@@ -66,7 +70,7 @@ Then compile it with Maven
 
 If all goes well it should produce a jar in the target directory. Now you can run the program.
 
-`java -jar ./target/capitala-VERSION.java`
+`java -jar ./target/capitalA-VERSION.java`
 
 ### Settings
 
