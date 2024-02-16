@@ -33,13 +33,15 @@ A list of bot instances that I know of.
 
 Please note that the default prefix is "$" and is required before all commands.
 
-| Command | Arg 1  | Arg 2  | Arg 3 | Action                                                                                  |
-|---------|--------|--------|-------|-----------------------------------------------------------------------------------------|
-| set     | filter | add    | WORD  | Adds the word specified in argument 3 to your server's filter.                          |
-| set     | prefix | STRING |       | Changes the prefix to the string specified in argument 2.                               |
-| boot    | kick   | USER   |       | Kicks the user mentioned in argument 2.                                                 |
-| boot    | ban    | USER   | DAYS  | Bans the user mentioned in argument 2 for the amount of days specified in argument 3.   |
-| boot    | mute   | USER   | HOURS | Mutes the user mentioned in argument 2 for the amount of hours specified in argument 3. |
+| Command | Arg 1    | Arg 2       | Arg 3  | Action                                                                                      |
+|---------|----------|-------------|--------|---------------------------------------------------------------------------------------------|
+| set     | filter   | add         | WORD   | Adds the word specified in argument 3 to your server's filter.                              |
+| set     | prefix   | STRING      |        | Changes the prefix to the string specified in argument 2.                                   |
+| set     | antiRaid | joinMessage | STRING | Changes the message sent to users when they join to the string in argument 3.               |
+| set     | antiRaid | joinTime    | INT    | Changes the amount of time before a user can vote to the days of the integer in argument 3. |
+| boot    | kick     | USER        |        | Kicks the user mentioned in argument 2.                                                     |
+| boot    | ban      | USER        | DAYS   | Bans the user mentioned in argument 2 for the amount of days specified in argument 3.       |
+| boot    | mute     | USER        | HOURS  | Mutes the user mentioned in argument 2 for the amount of hours specified in argument 3.     |
 
 ## Self-hosting
 

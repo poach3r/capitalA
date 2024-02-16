@@ -60,9 +60,10 @@ public class set {
       case "antiRaid": 
         switch(args[2]) {
           case "joinMessage":
+            setJoinMessage();
           break;
 
-          case "time":
+          case "joinTime":
             setJoinTime(); 
           break;
         }
