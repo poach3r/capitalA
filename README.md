@@ -77,3 +77,6 @@ If all goes well it should produce a jar in the target directory. Now you can ru
 ### Settings
 
 The only setting you need to change is the token specified in the object "token". 
+
+## [Plugins](./PLUGINS.md)
+
