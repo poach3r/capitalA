@@ -21,5 +21,9 @@ public class parseCommands {
       commands.moderation.set se = new commands.moderation.set(event, args, serverSettings); 
       se.mainFunc();
     }
+
+    else if(args[0].charAt(0) == '$') {
+      plugins.method1.onParse(event);
+    }
   }
 }

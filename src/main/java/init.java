@@ -3,7 +3,6 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 
 public class init {
-
   public static void main(String[] args) {
     main.settings defaultSettings = new main.settings("default"); 
     defaultSettings.init();
@@ -15,8 +14,13 @@ public class init {
       .login()
       .join();
 
+    System.out.println("-------------------");
+    System.out.println("Loading plugins");
+    plugins.method1.onInit(api);
+
     // add listeners to every server the bot is in
     System.out.println("Adding listeners to servers.");
+    System.out.println("-------------------");
     for(Object server : api.getServers().toArray()) {
       addServer(server, api);
     }
@@ -59,5 +63,6 @@ public class init {
       // parse command
       commands.parseCommands.mainFunc(event, arguments, serverSettings);
     });
+    System.out.println("-------------------");
   }
 }
