@@ -14,14 +14,5 @@ public class filter {
       }
     }
   }
-
-  // HACK initialize filter[]
-  public static String[] initFilter() {
-    String f[] = new String[50];
-    for(int i = 0; i < f.length; i++) {
-      f[i] = "this is a hack!!!!!!!!!";
-    }
-    return f;
-  }
 }
 

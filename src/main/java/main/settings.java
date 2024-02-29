@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.io.FileWriter;
 import org.json.JSONArray;
+import java.util.ArrayList;
 
 public class settings {
   private String serverId;
@@ -20,7 +21,7 @@ public class settings {
   private int miscThreshold;
   private int miscTimeLimit;
   private String huggingFaceKey;
-  private String filter[] = new String[50];
+  private ArrayList<String> filter;
   private Path settingsLocation;
   private String joinMessage; 
   private int joinTime;
@@ -38,7 +39,7 @@ public class settings {
     miscThreshold = 5;
     miscTimeLimit = 1;
     huggingFaceKey = "";
-    filter = main.filter.initFilter(); 
+    filter = new ArrayList<String>(); 
     settingsLocation = Paths.get("./settings.json");
     joinMessage = "Thanks for joining " + s + "! To prevent raids, you are currently banned from voting in elections, this will be lifted in 3 days.";
     joinTime = 3;
@@ -89,12 +90,12 @@ public class settings {
     huggingFaceKey = hfk;
   }
 
-  public void setFilter(String f[]) {
-    filter = f;
+  public void setFilter(ArrayList<String> Filter) {
+    filter = Filter;
   }
 
-  public void setFilter(String f, int i) {
-    filter[i] = f;
+  public void setFilter(String Word, int Index) {
+    filter.set(Index, Word);
   }
 
   public void setSettingsLocation(Path sl) {
@@ -157,12 +158,12 @@ public class settings {
     return huggingFaceKey;
   }
 
-  public String[] getFilter() {
+  public ArrayList<String> getFilter() {
     return filter;
   }
 
-  public String getFilter(int i) {
-    return filter[i]; 
+  public String getFilter(int Index) {
+    return filter.get(Index); 
   }
 
   public Path getSettingsLocation() {

@@ -15,6 +15,7 @@ import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.user.User;
 import java.time.Duration;
 import org.javacord.api.event.interaction.ButtonClickEvent;
+import java.util.ArrayList;
 
 public class boot {
   private int upvotes;
@@ -22,7 +23,7 @@ public class boot {
   private MessageCreateEvent event;
   private String author;
   private String victim;
-  private User voters[] = new User[50];
+  private ArrayList<User> voters;
   private ScheduledExecutorService executorService;
   private String args[] = new String[50];
   main.settings serverSettings;
@@ -33,7 +34,7 @@ public class boot {
     event = message;
     author = message.getMessageAuthor().getIdAsString();
     victim = arguments[2].replace("<", "").replace(">", "").replace("@", "");
-    voters = initVoters(voters);
+    voters = new ArrayList<User>();
     executorService = Executors.newSingleThreadScheduledExecutor();
     serverSettings = s;
     args = arguments;
@@ -209,13 +210,6 @@ public class boot {
     return true;
   }
 
-  private User[] initVoters(User voters[]) {
-    for(int i = 0; i < voters.length; i++) {
-      voters[i] = event.getApi().getYourself();
-    }
-    return voters;
-  }
-
   // check if user has already voted
   private boolean alreadyVoted(ButtonClickEvent e) {
     for(User voter : voters) {
@@ -264,7 +258,7 @@ public class boot {
   private void getVote(ButtonClickEvent e, String type) {
     switch(type) {
       case "upvote":
-        voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+        voters.set(upvotes + downvotes, e.getButtonInteraction().getUser()); 
         upvotes += 1;
         e.getInteraction().createImmediateResponder()
           .setContent("You have successfully upvoted")
@@ -273,7 +267,7 @@ public class boot {
         break;
 
         case "downvote":
-          voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+          voters.set(upvotes + downvotes, e.getButtonInteraction().getUser());
           downvotes += 1;
           e.getInteraction().createImmediateResponder()
             .setContent("You have successfully downvoted")

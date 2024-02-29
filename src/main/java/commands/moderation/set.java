@@ -18,12 +18,13 @@ import org.json.JSONObject;
 import java.nio.file.Files;
 import java.io.FileWriter;
 import org.javacord.api.event.interaction.ButtonClickEvent;
+import java.util.ArrayList;
 
 public class set {
   private int upvotes;
   private int downvotes;
   private MessageCreateEvent event;
-  private User voters[] = new User[50];
+  private ArrayList<User> voters;
   private ScheduledExecutorService executorService;
   main.settings serverSettings;
   private String args[];
@@ -34,7 +35,7 @@ public class set {
     downvotes = 0;
     event = message;
     args = a;
-    voters = initVoters(voters);
+    voters = new ArrayList<User>();
     executorService = Executors.newSingleThreadScheduledExecutor();
     serverSettings = s;
     author = message.getMessageAuthor().getIdAsString();
@@ -73,14 +74,6 @@ public class set {
         System.out.println(event.getMessageAuthor().getIdAsString() + " attempted to set invalid setting.");
       return;
     }
-  }
-
-  // HACK initialize voters[]
-  private User[] initVoters(User voters[]) {
-    for(int i = 0; i < voters.length; i++) {
-      voters[i] = event.getApi().getYourself();
-    }
-    return voters;
   }
 
   private void addWordToFilter() {
@@ -311,7 +304,7 @@ public class set {
   private void getVote(ButtonClickEvent e, String type) {
     switch(type) {
       case "upvote":
-        voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+        voters.set(upvotes + downvotes, e.getButtonInteraction().getUser()); 
         upvotes += 1;
         e.getInteraction().createImmediateResponder()
           .setContent("You have successfully upvoted")
@@ -320,7 +313,7 @@ public class set {
         break;
 
         case "downvote":
-          voters[upvotes+downvotes] = e.getButtonInteraction().getUser();
+          voters.set(upvotes + downvotes, e.getButtonInteraction().getUser());
           downvotes += 1;
           e.getInteraction().createImmediateResponder()
             .setContent("You have successfully downvoted")
@@ -329,6 +322,5 @@ public class set {
         break;
     }
   }
-
 }
 
